@@ -136,6 +136,7 @@ def draw_return_result(return_dict:dict,
             #axes[1].grid(axis="both")
 
             df.plot(ax=axes[2])
+            axes[2].set_title("Return")
             #axes[2].grid(axis="both")
 
             if mkt_rtn != None:
