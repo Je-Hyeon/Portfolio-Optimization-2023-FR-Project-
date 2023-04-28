@@ -7,7 +7,7 @@ from statsmodels.api import OLS, add_constant
 
 def calculate_cagr(return_df):
     '''rtn을 받았을 때, CAGR을 계산합니다'''
-    holding_year = (len(return_df) / 365)
+    holding_year = (len(return_df) / 250)
     cum = (return_df+1).cumprod()
     cagr = (cum.iloc[-1] / cum.iloc[0]) ** (1/holding_year) -1
     return round(cagr, 4)
