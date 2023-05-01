@@ -43,6 +43,8 @@ class PortfolioOptimzer:
         rt = eigen_vector @ np.diag(eigen_value_clipped) @ eigen_vector.T
         return eigen_vector @ np.diag(eigen_value_clipped) @ eigen_vector.T
     
+    def __kmeans_clustering(self, corr_matrix, ):
+        
     
     def run_optimizer(self, start_year:str, end_year:str, rebalancing:str, args=None, shrinkage_method="None"):
         '''
