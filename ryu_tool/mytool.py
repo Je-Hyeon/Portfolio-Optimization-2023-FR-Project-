@@ -5,6 +5,41 @@ import matplotlib as mpl
 from statsmodels.api import OLS, add_constant
 
 
+def simulate_rebalancing(return_df:pd.DataFrame, weight_df:pd.DataFrame):
+    '''
+    수익을 평가합니다
+    return_df: 자산의 수익률이 담긴 데이터프레임
+    weight_df: 미리 계산한 투자 Weight가 담긴 데이터프레임(Montly, Quartly 등 상관 없습니다)
+    
+    Return -> pf_dict, pf_weight_df
+    '''
+    # 초기값 설정
+    pf_value = 1
+    pf_dict = {}
+    pf_weight_df = pd.DataFrame(index=return_df.index, columns=return_df.columns)
+
+    weight = weight_df.iloc[0] # 시작 weight를 지정해준다(첫 weight에서 투자 시작, 장마감 직전에 포트폴리오 구성)
+    rebalancing_idx = weight_df.index
+
+    for idx, row in return_df.loc[weight_df.index[0]:].iloc[1:].iterrows(): # Daily로 반복문을 돌린다
+        # 수익률 평가가 리밸런싱보다 선행해야함
+        dollar_value = weight * pf_value
+        dollar_value = (dollar_value * (1+row)) # update the dollar value
+        weight = dollar_value / np.nansum(dollar_value)   # update the weight
+
+        pf_value = np.nansum(dollar_value) # update the pf value
+        pf_dict[idx] = pf_value
+
+        if idx in rebalancing_idx: # Rebalancing Date(장마감 직전에 리벨런싱 실시)
+            weight = weight_df.loc[idx]
+
+        # weight 저장
+        pf_weight_df.loc[idx,:] = weight
+        
+    return pf_dict, pf_weight_df
+
+
+
 def calculate_cagr(return_df):
     '''rtn을 받았을 때, CAGR을 계산합니다'''
     holding_year = (len(return_df) / 250)
