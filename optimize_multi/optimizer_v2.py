@@ -11,20 +11,21 @@ from optimize_multi.shrinkage_method import *
 #1. S&P500에 리벨런싱날 상장되어 있다고 투자 대상으로 삼는게 아니라... 
 # 리벨런싱날 이전 1년간 S&P500 주식 중 리턴 데이터가 전부 존재하는 애들만 투자 대상으로 삼아야겠다. 
 
-#2. lookbackwindow 마지막 하루 포함하는 걸로 수정
+#2. look_back_size 설정가능 / 마지막 하루 포함하는 걸로 수정
 
-#3. lookbackwindow 설정가능
+#3.  
 ######################################################
 
 ray.init(num_cpus=16)
 
 @ray.remote
-def run_optimizer(obj_function, rtn_df:pd.DataFrame, spx_mask:pd.DataFrame,start_year:str, end_year:str, rebalancing:str, look_back_size:int, shrinkage_method="None"):
+def run_optimizer(obj_function, rtn_df:pd.DataFrame, spx_mask:pd.DataFrame,start_year:str, end_year:str, rebalancing:str, look_back_size:int, max_ratio:float, shrinkage_method="None"):
     '''
     obj_function: 목적함수
     rtn_df: 수익률 데이터프레임
     spx_mask: S&P500 mask 데이터프레임
     look_back_size : int (Default: 365 days)
+    max_ratio : 개별 주식당 최대 얼마나 담을지 지정
     shrinkage_method : str -> [None, linear, constant, clipping]
     '''
     
@@ -55,7 +56,7 @@ def run_optimizer(obj_function, rtn_df:pd.DataFrame, spx_mask:pd.DataFrame,start
             shrinked_corr_matrix = shrink[shrinkage_method](corr_matrix = corr_matrix)
             cov_matrix = rtn_vol.dot(shrinked_corr_matrix).dot(rtn_vol) # corr matrix를 cov matrix로 변경
                         
-            bounds = tuple((0,1) for _ in range(len(rtn_lookback.columns)))
+            bounds = tuple((0,max_ratio) for _ in range(len(rtn_lookback.columns)))
             initial_weights = np.ones(len(rtn_lookback.columns)) / len(rtn_lookback.columns)
             
             # 최적화 수행
