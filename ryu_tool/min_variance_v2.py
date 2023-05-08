@@ -19,8 +19,8 @@ class PortfolioOptimzer:
         self.rtn = price.pct_change(fill_method=None)
 
     def __obj_sharpe(self, weights, cov_matrix):
-        portfolio_return = np.dot(weights, self.mean_return.values)
-        portfolio_volatility = np.sqrt(np.dot(weights.T, np.dot((cov_matrix), weights)))
+        portfolio_return = np.dot(weights, self.mean_return.values) * 250
+        portfolio_volatility = np.sqrt(np.dot(weights.T, np.dot((cov_matrix), weights))) * np.sqrt(250)
         sharpe_ratio = portfolio_return  / portfolio_volatility
         return -sharpe_ratio
 
@@ -182,7 +182,7 @@ class PortfolioOptimzer:
             corr_matrix = rtn_lookback.corr() # corr_matrix를 추정하고, optimizer에 넣기 전에 cov_matrix로 변환해야함
             
             self.rtn_sample = rtn_lookback
-            self.mean_return = rtn_lookback.mean()
+            self.mean_return = rtn_lookback.mean() 
             
             if shrinkage_method == "None" or shrinkage_method == "constant":
                 args = {"args":0}

@@ -16,7 +16,8 @@ def simulate_rebalancing(return_df:pd.DataFrame, weight_df:pd.DataFrame):
     # 초기값 설정
     pf_value = 1
     pf_dict = {}
-    pf_weight_df = pd.DataFrame(index=return_df.index, columns=return_df.columns)
+    start_idx = weight_df.index[0]
+    pf_weight_df = pd.DataFrame(index=return_df.loc[start_idx:].index, columns=weight_df.columns)
 
     weight = weight_df.iloc[0] # 시작 weight를 지정해준다(첫 weight에서 투자 시작, 장마감 직전에 포트폴리오 구성)
     rebalancing_idx = weight_df.index
@@ -24,19 +25,23 @@ def simulate_rebalancing(return_df:pd.DataFrame, weight_df:pd.DataFrame):
     for idx, row in return_df.loc[weight_df.index[0]:].iloc[1:].iterrows(): # Daily로 반복문을 돌린다
         # 수익률 평가가 리밸런싱보다 선행해야함
         dollar_value = weight * pf_value
-        dollar_value = (dollar_value * (1+row)) # update the dollar value
-        weight = dollar_value / np.nansum(dollar_value)   # update the weight
-
-        pf_value = np.nansum(dollar_value) # update the pf value
+        dollar_value = dollar_value * (1+ np.nan_to_num(row)) # update the dollar value
+        weight = dollar_value / dollar_value.sum()   # update the weight
+        pf_value = dollar_value.sum() # update the pf value
         pf_dict[idx] = pf_value
 
-        if idx in rebalancing_idx: # Rebalancing Date(장마감 직전에 리벨런싱 실시)
+        if idx in rebalancing_idx: # Rebalancing Date (장마감 직전에 리벨런싱 실시)
             weight = weight_df.loc[idx]
 
         # weight 저장
         pf_weight_df.loc[idx,:] = weight
-        
-    return pf_dict, pf_weight_df
+    
+    pf_result = pd.Series(pf_dict)
+    idx = pf_result.index[0] - pd.Timedelta(days=1)
+    pf_result[idx] = 1
+    pf_result.sort_index(inplace=True)
+    pf_result = pf_result.pct_change().fillna(0)
+    return pf_result, pf_weight_df
 
 
 
