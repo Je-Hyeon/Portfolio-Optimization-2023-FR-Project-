@@ -8,10 +8,10 @@ from statsmodels.api import OLS, add_constant
 def simulate_rebalancing(return_df:pd.DataFrame, weight_df:pd.DataFrame):
     '''
     수익을 평가합니다
-    return_df: 자산의 수익률이 담긴 데이터프레임
-    weight_df: 미리 계산한 투자 Weight가 담긴 데이터프레임(Montly, Quartly 등 상관 없습니다)
+    return_df: 자산의 수익률이 담긴 데이터프레임(Daily Frequency)
+    weight_df: 미리 계산한 Weight가 담긴 데이터프레임(Montly, Quartly 등 상관 없습니다)
     
-    Return -> pf_dict, pf_weight_df
+    Return -> pf_dict(포트폴리오의 리턴), pf_weight_df(포트폴리오 weight 변화)
     '''
     # 초기값 설정
     pf_value = 1
@@ -90,8 +90,10 @@ def print_statistics(return_dict:dict,
     std = []
     cagr = []
     mdd = []
+    key_list = []
     
     for key, df in return_dict.items():
+        key_list.append(key)
         if start_date != None:
             df2 = df.loc[start_date:].iloc[1:]
         else:
@@ -114,6 +116,7 @@ def print_statistics(return_dict:dict,
     return_df = pd.DataFrame([cagr,mean,std,mdd], index=["CAGR", "Mean","STD","MDD"])
     
     if mkt_rtn != None:
+        key_list.append("MKT")
         
         if start_date != None:
             mkt_rtn2 = mkt_rtn.loc[start_date:].iloc[1:]
@@ -132,7 +135,7 @@ def print_statistics(return_dict:dict,
                             index=["CAGR", "Mean","STD","MDD"], 
                             columns=["MKT"])
         
-        return_df = pd.concat([return_df, mkt], axis=1)
+        return_df = pd.concat([return_df, mkt], axis=1, keys=key_list)
     return_df.loc["Sharpe",:] = (return_df.loc["Mean",:]) / (return_df.loc["STD",:])
     
     return return_df
