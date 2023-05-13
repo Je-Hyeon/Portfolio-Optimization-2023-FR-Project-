@@ -5,45 +5,6 @@ import matplotlib as mpl
 from statsmodels.api import OLS, add_constant
 
 
-def simulate_rebalancing(return_df:pd.DataFrame, weight_df:pd.DataFrame):
-    '''
-    수익을 평가합니다
-    return_df: 자산의 수익률이 담긴 데이터프레임(Daily Frequency)
-    weight_df: 미리 계산한 Weight가 담긴 데이터프레임(Montly, Quartly 등 상관 없습니다)
-    
-    Return -> pf_dict(포트폴리오의 리턴), pf_weight_df(포트폴리오 weight 변화)
-    '''
-    # 초기값 설정
-    pf_value = 1
-    pf_dict = {}
-    start_idx = weight_df.index[0]
-    pf_weight_df = pd.DataFrame(index=return_df.loc[start_idx:].index, columns=weight_df.columns)
-
-    weight = weight_df.iloc[0] # 시작 weight를 지정해준다(첫 weight에서 투자 시작, 장마감 직전에 포트폴리오 구성)
-    rebalancing_idx = weight_df.index
-
-    for idx, row in return_df.loc[weight_df.index[0]:].iloc[1:].iterrows(): # Daily로 반복문을 돌린다
-        # 수익률 평가가 리밸런싱보다 선행해야함
-        dollar_value = weight * pf_value
-        dollar_value = dollar_value * (1+ np.nan_to_num(row)) # update the dollar value
-        weight = dollar_value / dollar_value.sum()   # update the weight
-        pf_value = dollar_value.sum() # update the pf value
-        pf_dict[idx] = pf_value
-
-        if idx in rebalancing_idx: # Rebalancing Date (장마감 직전에 리벨런싱 실시)
-            weight = weight_df.loc[idx]
-
-        # weight 저장
-        pf_weight_df.loc[idx,:] = weight
-    
-    pf_result = pd.Series(pf_dict)
-    idx = pf_result.index[0] - pd.Timedelta(days=1)
-    pf_result[idx] = 1
-    pf_result.sort_index(inplace=True)
-    pf_result = pf_result.pct_change().fillna(0)
-    return pf_result, pf_weight_df
-
-
 
 def calculate_cagr(return_df):
     '''rtn을 받았을 때, CAGR을 계산합니다'''
