@@ -8,7 +8,7 @@ from statsmodels.api import OLS, add_constant
 
 def calculate_cagr(return_df):
     '''rtn을 받았을 때, CAGR을 계산합니다'''
-    holding_year = (len(return_df) / 250)
+    holding_year = (len(return_df) / 252)
     cum = (return_df+1).cumprod()
     cagr = (cum.iloc[-1] / cum.iloc[0]) ** (1/holding_year) -1
     return round(cagr, 4)
@@ -60,10 +60,10 @@ def print_statistics(return_dict:dict,
         else:
             df2 = df.iloc[1:]
             
-        m = (df2.mean() * 365).round(5)   
+        m = (df2.mean() * 252).round(5)   
         mean.append(m)
         
-        s = (df2.std() * np.sqrt(365))
+        s = (df2.std() * np.sqrt(252))
         std.append(s)
         
         ca = calculate_cagr(df2)
@@ -90,8 +90,8 @@ def print_statistics(return_dict:dict,
         mdd= round((-drawdown).max(), 3)
         
         mkt = pd.DataFrame([calculate_cagr(mkt_rtn2), 
-                            mkt_rtn2.mean() * 365, 
-                            mkt_rtn2.std() * np.sqrt(365),
+                            mkt_rtn2.mean() * 252, 
+                            mkt_rtn2.std() * np.sqrt(252),
                             mdd],
                             index=["CAGR", "Mean","STD","MDD"], 
                             columns=["MKT"])
