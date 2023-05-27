@@ -139,3 +139,5 @@ def k_means_clustering(corr_matrix, arg):
                         cor_matrix_cluster.iloc[i,j] = between_corr
                         
     r = alpha * cor_matrix_cluster + (1-alpha) * corr_matrix
+    
+    return r

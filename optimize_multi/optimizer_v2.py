@@ -21,7 +21,7 @@ ray.init(num_cpus=16)
 
 @ray.remote
 def run_optimizer(obj_function, rtn_df:pd.DataFrame, spx_mask, start_year:str, end_year:str, rebalancing:str, 
-                  look_back_size:int, max_ratio:float, shrinkage_method="None", arg="None"):
+                  look_back_size:int, max_ratio:float, min_ratio:float, shrinkage_method="None", arg="None"):
     '''
     obj_function: 목적함수 [obj_sharpe, obj_variance]
     rtn_df: 수익률 데이터프레임
@@ -67,7 +67,7 @@ def run_optimizer(obj_function, rtn_df:pd.DataFrame, spx_mask, start_year:str, e
                 
             cov_matrix = rtn_vol.dot(shrinked_corr_matrix).dot(rtn_vol) # corr matrix를 cov matrix로 변경
                         
-            bounds = tuple((0, max_ratio) for _ in range(len(rtn_lookback.columns)))
+            bounds = tuple((min_ratio, max_ratio) for _ in range(len(rtn_lookback.columns)))
             initial_weights = np.ones(len(rtn_lookback.columns)) / len(rtn_lookback.columns)
             
             # 최적화 수행
